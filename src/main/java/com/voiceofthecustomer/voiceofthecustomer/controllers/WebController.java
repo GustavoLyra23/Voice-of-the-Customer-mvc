@@ -9,8 +9,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/web")
 public class WebController {
 
-    @GetMapping
-    public String showPage(Model model) {
-        return "index";
+    @GetMapping("/form")
+    public String showFormPage(Model model) {
+        return "form";
     }
+
+    @GetMapping("/statistics")
+    public String showStatisticsPage(Model model) {
+        return "statistics";
+    }
+
+
 }

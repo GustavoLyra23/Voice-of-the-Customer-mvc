@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Restaurant Reviews</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f1f3f4;
+            margin: 0;
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            box-sizing: border-box;
+            margin: 20px auto;
+        }
+
+        h1 {
+            color: #1a73e8;
+            font-size: 28px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #555;
+        }
+
+        input[type="text"] {
+            width: 80%;
+            max-width: 400px;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #1a73e8;
+            border: none;
+            color: white;
+            padding: 10px 30px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #1558d6;
+        }
+
+        .results {
+            display: none; /* Inicialmente oculto */
+            margin-top: 30px;
+        }
+
+        .results-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .results-header h2 {
+            margin: 0;
+            font-size: 22px;
+            color: #333;
+        }
+
+        .results-header p {
+            margin: 5px 0;
+            font-size: 18px;
+            color: #555;
+        }
+
+        .review {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .review p {
+            margin: 5px 0;
+            font-size: 16px;
+        }
+
+        .review .score {
+            color: #555;
+            font-size: 14px;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #1a73e8;
+            text-decoration: none;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            color: red;
+            text-align: center;
+            display: none;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="container">
+    <h1>Restaurant Reviews</h1>
+
+    <div class="form-group">
+        <label for="restaurantSearch">Search by Restaurant Name</label>
+        <input type="text" id="restaurantSearch" placeholder="Enter restaurant name">
+        <button onclick="searchRestaurant()">Search</button>
+    </div>
+
+    <div class="error-message" id="error-message">
+        Restaurant not found. Please try another name.
+    </div>
+
+    <div class="results" id="results">
+        <div class="results-header">
+            <h2 id="restaurantName"></h2>
+            <p><strong>Average Score:</strong> <span id="averageScore"></span></p>
+        </div>
+        <!-- Reviews will be displayed here -->
+    </div>
+
+    <a class="back-link" href="/web">Back to Form</a>
+</div>
+
+<script>
+    function searchRestaurant() {
+        const searchValue = document.getElementById('restaurantSearch').value.trim();
+        if (!searchValue) {
+            showErrorMessage('Please enter a restaurant name.');
+            return;
+        }
+
+        fetch(`/reviews?name=${encodeURIComponent(searchValue)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.content && data.content.length > 0) {
+                    displayReviews(data.content);
+                } else {
+                    showErrorMessage('Restaurant not found. Please try another name.');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching review data:', error);
+                showErrorMessage('An error occurred while fetching data. Please try again.');
+            });
+    }
+
+    function showErrorMessage(message) {
+        document.getElementById('results').style.display = 'none';
+        document.getElementById('error-message').style.display = 'block';
+        document.getElementById('error-message').textContent = message;
+    }
+
+    function displayReviews(reviews) {
+        document.getElementById('error-message').style.display = 'none';
+        const resultsContainer = document.getElementById('results');
+        const averageScore = calculateAverageScore(reviews);
+        document.getElementById('restaurantName').textContent = reviews[0].name;
+        document.getElementById('averageScore').textContent = averageScore.toFixed(1);
+        resultsContainer.innerHTML = `
+                <div class="results-header">
+                    <h2 id="restaurantName">${reviews[0].name}</h2>
+                    <p><strong>Average Score:</strong> <span id="averageScore">${averageScore.toFixed(1)}</span></p>
+                </div>`;
+        resultsContainer.style.display = 'block';
+
+        reviews.forEach(review => {
+            const reviewElement = document.createElement('div');
+            reviewElement.className = 'review';
+
+            const reviewScore = document.createElement('div');
+            reviewScore.className = 'score';
+            reviewScore.textContent = `Score: ${review.score}`;
+            reviewElement.appendChild(reviewScore);
+
+            const reviewText = document.createElement('p');
+            reviewText.textContent = review.review;
+            reviewElement.appendChild(reviewText);
+
+            resultsContainer.appendChild(reviewElement);
+        });
+    }
+
+    function calculateAverageScore(reviews) {
+        if (reviews.length === 0) return 0;
+        const totalScore = reviews.reduce((acc, review) => acc + review.score, 0);
+        return totalScore / reviews.length;
+    }
+
+    // Initial load
+    window.onload = function() {
+        document.getElementById('results').style.display = 'none';
+        document.getElementById('error-message').style.display = 'none';
+    }
+</script>
+</body>
+</html>

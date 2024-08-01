@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Restaurant Feedback</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: url('https://www.example.com/background-form.jpg') no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: #333;
+        }
+
+        .container {
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: #1a73e8;
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: #555;
+            text-align: left;
+        }
+
+        input[type="text"],
+        textarea {
+            width: calc(100% - 24px);
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        .rating-container {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .rating-container label {
+            display: inline-block;
+            margin-right: 8px;
+            font-size: 18px;
+            color: #333;
+        }
+
+        button {
+            background-color: #1a73e8;
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #1558d6;
+        }
+
+        button:active {
+            background-color: #0d47a1;
+            transform: scale(0.98);
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<div class="container" id="form-container">
+    <h1>Restaurant Feedback</h1>
+    <form id="feedbackForm">
+        <label for="restaurant_name">Restaurant Name</label>
+        <input type="text" id="restaurant_name" name="name" required>
+
+        <label>Rate the Restaurant (1 to 10)</label>
+        <div class="rating-container">
+            <label><input type="radio" name="score" value="1" required> 1</label>
+            <label><input type="radio" name="score" value="2" required> 2</label>
+            <label><input type="radio" name="score" value="3" required> 3</label>
+            <label><input type="radio" name="score" value="4" required> 4</label>
+            <label><input type="radio" name="score" value="5" required> 5</label>
+            <label><input type="radio" name="score" value="6" required> 6</label>
+            <label><input type="radio" name="score" value="7" required> 7</label>
+            <label><input type="radio" name="score" value="8" required> 8</label>
+            <label><input type="radio" name="score" value="9" required> 9</label>
+            <label><input type="radio" name="score" value="10" required> 10</label>
+        </div>
+
+        <label for="review">Review</label>
+        <textarea id="review" name="review" rows="4" required></textarea>
+
+        <button type="submit">Submit</button>
+    </form>
+</div>
+
+<div class="container hidden" id="confirmation-container">
+    <h1>Thank you for your feedback!</h1>
+    <p>Would you like to submit another review?</p>
+    <button onclick="showForm()">Yes, submit another review</button>
+    <a href="/web/statistics" style="color: #1a73e8; text-decoration: underline;">View Statistics</a>
+</div>
+
+<script>
+    document.getElementById('feedbackForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const form = event.target;
+        const data = {
+            name: form.restaurant_name.value,
+            score: form.score.value,
+            review: form.review.value
+        };
+
+        fetch('/typeform', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+                showConfirmation();
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+    });
+
+    function showConfirmation() {
+        document.getElementById('form-container').classList.add('hidden');
+        document.getElementById('confirmation-container').classList.remove('hidden');
+    }
+
+    function showForm() {
+        document.getElementById('confirmation-container').classList.add('hidden');
+        document.getElementById('form-container').classList.remove('hidden');
+        document.getElementById('feedbackForm').reset();
+    }
+</script>
+</body>
+</html>
