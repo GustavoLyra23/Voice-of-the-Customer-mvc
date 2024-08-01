@@ -80,4 +80,8 @@ public class RestaurantReview {
     public int hashCode() {
         return Objects.hashCode(id);
     }
+
+    public void setInstant(Instant instant) {
+        this.instant = instant;
+    }
 }

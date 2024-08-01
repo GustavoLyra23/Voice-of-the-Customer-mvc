@@ -1,24 +1,24 @@
 package com.voiceofthecustomer.voiceofthecustomer.controllers;
 
+import com.voiceofthecustomer.voiceofthecustomer.dtos.DtoFactory;
 import com.voiceofthecustomer.voiceofthecustomer.dtos.FormResponse;
-import com.voiceofthecustomer.voiceofthecustomer.entities.RestaurantReview;
+import com.voiceofthecustomer.voiceofthecustomer.dtos.RestaurantDto;
+import com.voiceofthecustomer.voiceofthecustomer.services.RestaurantReviewService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.Instant;
 
 @RestController
 @RequestMapping(value = "/typeform")
 public class TypeFormController {
 
+    @Autowired
+    private RestaurantReviewService restaurantReviewService;
+
     @PostMapping
-    public String webhook(@RequestBody FormResponse formResponse) {
-        System.out.println(formResponse.getEvent_id());
-        RestaurantReview res = new RestaurantReview(null, formResponse.getForm_response().getAnswers().get(0).getText(),
-                formResponse.getForm_response().getAnswers().get(1).getNumber(),
-                formResponse.getForm_response().getAnswers().get(2).getText(), Instant.parse(formResponse.getForm_response().getLanded_at()));
-        System.out.println(res);
-        return "Webhook executed successfully";
+    public ResponseEntity<RestaurantDto> webhook(@RequestBody FormResponse formResponse) {
+        RestaurantDto restaurantDto = restaurantReviewService.insertRestaurant(DtoFactory.restaurantDto(formResponse));
+        return ResponseEntity.ok(restaurantDto);
     }
 
     @GetMapping
@@ -28,3 +28,4 @@ public class TypeFormController {
     }
 
 }
+
